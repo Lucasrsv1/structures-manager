@@ -5,7 +5,7 @@ class General {
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */
-	async welcome (req, res) {
+	welcome (req, res) {
 		res.status(200).json({ message: `Structures Manager API v${packageJson.version}` });
 	}
 
