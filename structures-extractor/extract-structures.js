@@ -10,8 +10,16 @@ const { resolve } = require("path");
  */
 const holdings = require("./current_file_holdings.json");
 
-// Para cada estrutura pega a primeira URL mmcif e obtém o nome do arquivo
-const holdingsFiles = Object.keys(holdings).map(k => holdings[k].mmcif[0].split("/").pop());
+// Para cada estrutura pega a primeira URL e obtém apenas o nome do arquivo
+// * Preferencialmente usa o arquivo PDB, pois é mais leve e rápido de processar,
+// * mas como nem todas as estruturas possuem arquivo PDB, usa o CIF em último caso.
+const holdingsFiles = Object.keys(holdings).map(k => {
+	let url = holdings[k].mmcif[0];
+	if (holdings[k].pdb)
+		url = url.replace(".cif", ".pdb");
+
+	return url.split("/").pop();
+});
 
 // Escreve no arquivo JSON de saída os nomes dos arquivos
 const outputFile = resolve(__dirname, "..", "structures.json");
