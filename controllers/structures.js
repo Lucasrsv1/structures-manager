@@ -4,7 +4,8 @@ const mongo = require("../mongo");
 
 const MAXIMUM_PER_MACHINE = 20;
 
-const REDISTRIBUTION_INTERVAL = process.env.REDISTRIBUTION_INTERVAL || (5 * 60 * 1000);
+const REDISTRIBUTION_INTERVAL_PDB = process.env.REDISTRIBUTION_INTERVAL_PDB || (5 * 60 * 1000);
+const REDISTRIBUTION_INTERVAL_CIF = process.env.REDISTRIBUTION_INTERVAL_CIF || (10 * 60 * 60 * 1000);
 
 // TODO: apply validation to the routes
 // TODO: implement a handshake to protect routes
@@ -34,7 +35,10 @@ class Structures {
 			const pending = await mongo.Structures.count({ result: null });
 			const processing = await mongo.Structures.count({
 				result: null,
-				distributedAt: { $gte: new Date(Date.now() - REDISTRIBUTION_INTERVAL) }
+				$or: [
+					{ filename: { $regex: /\.pdb\.gz$/ }, distributedAt: { $gte: new Date(Date.now() - REDISTRIBUTION_INTERVAL_PDB) } },
+					{ filename: { $regex: /\.cif\.gz$/ }, distributedAt: { $gte: new Date(Date.now() - REDISTRIBUTION_INTERVAL_CIF) } }
+				]
 			});
 			res.status(200).json({ count, pending, processing, processed: count - pending });
 		} catch (error) {
@@ -50,14 +54,22 @@ class Structures {
 	async getNext (req, res) {
 		try {
 			const qty_cpus = Math.min(MAXIMUM_PER_MACHINE, Math.max(1, Number(req.params.qty_cpus) || 1));
+			const filters = {
+				result: null,
+				$or: [
+					{ distributedAt: null },
+					{ filename: { $regex: /\.pdb\.gz$/ }, distributedAt: { $lt: new Date(Date.now() - REDISTRIBUTION_INTERVAL_PDB) } },
+					{ filename: { $regex: /\.cif\.gz$/ }, distributedAt: { $lt: new Date(Date.now() - REDISTRIBUTION_INTERVAL_CIF) } }
+				]
+			};
+
+			if (req.params.filetype.toLowerCase() === "pdb")
+				filters.filename = { $regex: /\.pdb\.gz$/ };
+			else if (req.params.filetype.toLowerCase() === "cif")
+				filters.filename = { $regex: /\.cif\.gz$/ };
+
 			const results = await mongo.Structures.find(
-				{
-					result: null,
-					$or: [
-						{ distributedAt: null },
-						{ distributedAt: { $lt: new Date(Date.now() - REDISTRIBUTION_INTERVAL) } }
-					]
-				},
+				filters,
 				{ filename: true, _id: true }
 			).limit(qty_cpus);
 
