@@ -41,7 +41,9 @@ forceConnect();
 
 const structuresSchema = new mongoose.Schema({
 	filename: String,
+	bytesCount: Number,
 	distributedAt: { type: Date, default: null },
+	processingTime: { type: Number, default: null },
 	result: { type: Number, default: null }
 });
 

@@ -6,11 +6,13 @@
 	"scripts": {
 		"start": "nodemon index.js",
 		"mongo": "node structures-extractor/build-mongo-collections.js",
-		"extract-structures": "node structures-extractor/extract-structures.js"
+		"extract-structures": "node structures-extractor/extract-structures.js",
+		"get-structure-sizes": "node structures-extractor/structures-size/get-structure-sizes.js"
 	},
 	"author": "Lucas Rassilan Vilanova",
 	"license": "ISC",
 	"dependencies": {
+		"axios": "^1.2.1",
 		"chalk": "^4.1.2",
 		"console-stamp": "^3.1.0",
 		"cors": "^2.8.5",
