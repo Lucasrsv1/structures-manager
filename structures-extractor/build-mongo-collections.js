@@ -40,8 +40,17 @@ const sleep = ms => new Promise(res => setTimeout(res, ms));
 
 		console.log("Inserting structures...");
 		const bulkOp = mongo.Structures.collection.initializeUnorderedBulkOp();
-		for (const filename of structuresJson)
-			bulkOp.insert({ filename, bytesCount: null, distributedAt: null, result: null, processingTime: null });
+		for (const filename of structuresJson) {
+			bulkOp.insert({
+				filename,
+				bytesCount: null,
+				distributedAt: null,
+				result: null,
+				processingTime: null,
+				finishedAt: null,
+				totalTime: null
+			});
+		}
 
 		await bulkOp.execute();
 

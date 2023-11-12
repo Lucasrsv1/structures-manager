@@ -96,6 +96,8 @@ class Structures {
 	 */
 	async saveResult (req, res) {
 		try {
+			const finishedAt = new Date();
+
 			const updatedMinDistance = await mongo.MinDistance.updateMany(
 				{ result: { $gt: req.body.result } },
 				{ result: req.body.result }
@@ -104,9 +106,20 @@ class Structures {
 			if (updatedMinDistance.modifiedCount > 0)
 				console.log(chalk.green(`Got new minimum distance! ${req.body.result} from structure ${req.body.filename}.`));
 
+			const structure = await mongo.Structures.findOne(
+				{ filename: req.body.filename }
+			);
+
+			const newData = {
+				result: req.body.result,
+				processingTime: req.body.processingTime,
+				totalTime: finishedAt - structure.distributedAt,
+				finishedAt
+			};
+
 			const updated = await mongo.Structures.updateOne(
 				{ filename: req.body.filename },
-				{ result: req.body.result }
+				newData
 			);
 
 			res.status(201).json({ success: updated.modifiedCount > 0, isNewMinDistance: updatedMinDistance.modifiedCount > 0 });
