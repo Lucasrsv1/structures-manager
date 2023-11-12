@@ -1,8 +1,10 @@
 const chalk = require("chalk");
 
 const mongo = require("../mongo");
+const { ProcessorInfo } = require("../models/processor-info");
 
 const MAXIMUM_PER_MACHINE = 20;
+const MAXIMUM_PDB_SIZE = 1 * 1024 * 1024; // 1MB
 
 const REDISTRIBUTION_INTERVAL_PDB = process.env.REDISTRIBUTION_INTERVAL_PDB || (5 * 60 * 1000);
 const REDISTRIBUTION_INTERVAL_CIF = process.env.REDISTRIBUTION_INTERVAL_CIF || (10 * 60 * 60 * 1000);
@@ -53,6 +55,14 @@ class Structures {
 	 */
 	async getNext (req, res) {
 		try {
+			if (!res.locals.processorInfo)
+				return res.status(403).json({ message: "Access denied. Processor not registered." });
+
+			/**
+			 * @type {ProcessorInfo}
+			 */
+			const processorInfo = res.locals.processorInfo;
+
 			const qty_cpus = Math.min(MAXIMUM_PER_MACHINE, Math.max(1, Number(req.params.qty_cpus) || 1));
 			const filters = {
 				result: null,
@@ -79,8 +89,12 @@ class Structures {
 				{ distributedAt }
 			);
 
-			if (updated.modifiedCount === results.length)
-				return res.status(200).json({ filenames: results.map(r => r.filename) });
+			if (updated.modifiedCount === results.length) {
+				const filenames = results.map(r => r.filename);
+
+				processorInfo.addFiles(filenames);
+				return res.status(200).json({ filenames });
+			}
 
 			console.error("Distribution inconsistency detected.", updated.modifiedCount, "!==", results.length);
 			res.status(500).json({ message: "Distribution inconsistency detected. Try again." });
@@ -96,8 +110,18 @@ class Structures {
 	 */
 	async saveResult (req, res) {
 		try {
-			const finishedAt = new Date();
+			if (!res.locals.processorInfo)
+				return res.status(403).json({ message: "Access denied. Processor not registered." });
 
+			/**
+			 * @type {ProcessorInfo}
+			 */
+			const processorInfo = res.locals.processorInfo;
+
+			if (!processorInfo.isProcessingFile(req.body.filename))
+				return res.status(403).json({ message: `Access denied. This processor is not allowed to process structure ${req.body.filename}.` });
+
+			const finishedAt = new Date();
 			const updatedMinDistance = await mongo.MinDistance.updateMany(
 				{ result: { $gt: req.body.result } },
 				{ result: req.body.result }
@@ -122,6 +146,7 @@ class Structures {
 				newData
 			);
 
+			processorInfo.finishedFile(req.body.filename);
 			res.status(201).json({ success: updated.modifiedCount > 0, isNewMinDistance: updatedMinDistance.modifiedCount > 0 });
 		} catch (error) {
 			console.error(error);
