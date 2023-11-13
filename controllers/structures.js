@@ -1,6 +1,10 @@
 const chalk = require("chalk");
+const { param, body } = require("express-validator");
 
 const mongo = require("../mongo");
+const naming = require("./naming");
+
+const { isRequestInvalid } = require("../utils/http-validation");
 const { ProcessorInfo } = require("../models/processor-info");
 
 const MAXIMUM_PER_MACHINE = 20;
@@ -9,10 +13,22 @@ const MAXIMUM_PDB_SIZE = 1 * 1024 * 1024; // 1MB
 const REDISTRIBUTION_INTERVAL_PDB = process.env.REDISTRIBUTION_INTERVAL_PDB || (5 * 60 * 1000);
 const REDISTRIBUTION_INTERVAL_CIF = process.env.REDISTRIBUTION_INTERVAL_CIF || (10 * 60 * 60 * 1000);
 
-// TODO: apply validation to the routes
-// TODO: implement a handshake to protect routes
-
 class Structures {
+	constructor () {
+		this.validations = {
+			getNext: [
+				naming.ensureAuthorized.bind(naming),
+				param("qty_cpus").optional().isInt({ min: 1 }).withMessage("Invalid number of CPUs.").toInt()
+			],
+			saveResult: [
+				naming.ensureAuthorized.bind(naming),
+				body("filename").isString().isLength({ min: "1" }).withMessage("Invalid structure filename."),
+				body("result").isNumeric().withMessage("Invalid processing result.").toFloat(),
+				body("processingTime").isNumeric().withMessage("Invalid processing time.").toInt()
+			]
+		};
+	}
+
 	/**
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
@@ -54,6 +70,8 @@ class Structures {
 	 * @param {import("express").Response} res
 	 */
 	async getNext (req, res) {
+		if (isRequestInvalid(req, res)) return;
+
 		try {
 			if (!res.locals.processorInfo)
 				return res.status(403).json({ message: "Access denied. Processor not registered." });
@@ -73,10 +91,12 @@ class Structures {
 				]
 			};
 
-			if (req.params.filetype.toLowerCase() === "pdb")
-				filters.filename = { $regex: /\.pdb\.gz$/ };
-			else if (req.params.filetype.toLowerCase() === "cif")
-				filters.filename = { $regex: /\.cif\.gz$/ };
+			if (req.params.filetype) {
+				if (req.params.filetype.toLowerCase() === "pdb")
+					filters.filename = { $regex: /\.pdb\.gz$/ };
+				else if (req.params.filetype.toLowerCase() === "cif")
+					filters.filename = { $regex: /\.cif\.gz$/ };
+			}
 
 			const results = await mongo.Structures.find(
 				filters,
@@ -109,6 +129,8 @@ class Structures {
 	 * @param {import("express").Response} res
 	 */
 	async saveResult (req, res) {
+		if (isRequestInvalid(req, res)) return;
+
 		try {
 			if (!res.locals.processorInfo)
 				return res.status(403).json({ message: "Access denied. Processor not registered." });
