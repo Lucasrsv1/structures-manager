@@ -45,6 +45,7 @@ const sleep = ms => new Promise(res => setTimeout(res, ms));
 				filename,
 				bytesCount: null,
 				distributedAt: null,
+				lastPing: null,
 				result: null,
 				processingTime: null,
 				finishedAt: null,

@@ -43,6 +43,7 @@ const structuresSchema = new mongoose.Schema({
 	filename: String,
 	bytesCount: Number,
 	distributedAt: { type: Date, default: null },
+	lastPing: { type: Date, default: null },
 	finishedAt: { type: Date, default: null },
 	totalTime: { type: Number, default: null },
 	processingTime: { type: Number, default: null },

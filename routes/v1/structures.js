@@ -11,4 +11,6 @@ structuresRoutes.get("/next/:qty_cpus/:filetype", structures.validations.getNext
 
 structuresRoutes.post("/result", structures.validations.saveResult, structures.saveResult);
 
+structuresRoutes.patch("/ping", structures.validations.processorPing, structures.processorPing);
+
 module.exports = structuresRoutes;
