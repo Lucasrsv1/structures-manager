@@ -12,7 +12,7 @@ const MAXIMUM_FILES_PER_REQUEST = 20;
 
 // Define o tamanho máximo dos arquivos que podem ser processados via compartilhamento da CPU entre múltiplos arquivos,
 // ou seja, acima desse tamanho, a CPU inteira será alocada para processar um único arquivo, cada núcleo processando um pedaço
-const MAXIMUM_SIZE_FOR_MULTIPLE_FILES = 1 * 1024 * 1024; // 1MB
+const MAXIMUM_SIZE_FOR_MULTI_FILES_MODE = 1 * 1024 * 1024; // 1MB
 
 // Define o tempo máximo desde o último ping do processador para que um arquivo seja redistribuído para outro processador
 const REDISTRIBUTION_INTERVAL = process.env.REDISTRIBUTION_INTERVAL || (5 * 60 * 1000);
@@ -22,7 +22,8 @@ class Structures {
 		this.validations = {
 			getNext: [
 				naming.ensureAuthorized.bind(naming),
-				param("qty_cpus").optional().isInt({ min: 1 }).withMessage("Invalid number of CPUs.").toInt()
+				param("qty_cpus").optional().isInt({ min: 1 }).withMessage("Invalid number of CPUs.").toInt(),
+				param("mode").optional().toUpperCase().isIn(["MULTI_FILES", "SINGLE_FILE"]).withMessage("Invalid processing mode.")
 			],
 			saveResult: [
 				naming.ensureAuthorized.bind(naming),
@@ -99,11 +100,11 @@ class Structures {
 				]
 			};
 
-			if (req.params.filetype) {
-				if (req.params.filetype.toLowerCase() === "pdb")
-					filters.bytesCount = { $lte: MAXIMUM_SIZE_FOR_MULTIPLE_FILES };
-				else if (req.params.filetype.toLowerCase() === "cif")
-					filters.bytesCount = { $gt: MAXIMUM_SIZE_FOR_MULTIPLE_FILES };
+			if (req.params.mode) {
+				if (req.params.mode.toUpperCase() === "MULTI_FILES")
+					filters.bytesCount = { $lte: MAXIMUM_SIZE_FOR_MULTI_FILES_MODE };
+				else if (req.params.mode.toUpperCase() === "SINGLE_FILE")
+					filters.bytesCount = { $gt: MAXIMUM_SIZE_FOR_MULTI_FILES_MODE };
 			}
 
 			const results = await mongo.Structures.find(

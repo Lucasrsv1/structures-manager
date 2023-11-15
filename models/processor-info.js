@@ -1,10 +1,10 @@
 /**
  * @enum {string}
  */
-const ProcessingTypes = Object.freeze({
+const ProcessingModes = Object.freeze({
 	UNDEFINED: "UNDEFINED",
 	SINGLE_FILE: "SINGLE_FILE",
-	MULTIPLE_FILES: "MULTIPLE_FILES"
+	MULTI_FILES: "MULTI_FILES"
 });
 
 class ProcessorInfo {
@@ -12,7 +12,7 @@ class ProcessorInfo {
 		this.id = id;
 		this.host = host;
 		this.files = [];
-		this.processingType = ProcessingTypes.UNDEFINED;
+		this.processingType = ProcessingModes.UNDEFINED;
 		this.lastContact = Date.now();
 	}
 
@@ -33,4 +33,4 @@ class ProcessorInfo {
 	}
 }
 
-module.exports = { ProcessorInfo, ProcessingTypes };
+module.exports = { ProcessorInfo, ProcessingModes };

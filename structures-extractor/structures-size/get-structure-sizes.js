@@ -127,7 +127,7 @@ async function start () {
 
 	handleProcessExit(CHILDREN);
 
-	createWorker(CHILDREN, onMessageFromWorker, QTY_CPUS);
+	createWorker(CHILDREN, onMessageFromWorker, QTY_CPUS * 2);
 
 	await sleep(5000);
 	run();
