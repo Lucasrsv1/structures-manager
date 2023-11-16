@@ -58,13 +58,63 @@ class Structures {
 	 */
 	async count (req, res) {
 		try {
-			const count = await mongo.Structures.count();
-			const pending = await mongo.Structures.count({ result: null });
-			const processing = await mongo.Structures.count({
-				result: null,
-				lastPing: { $gte: new Date(Date.now() - REDISTRIBUTION_INTERVAL) }
+			const structures = {
+				count: await mongo.Structures.count(),
+				pending: await mongo.Structures.count({ result: null }),
+				processing: await mongo.Structures.count({
+					result: null,
+					lastPing: { $gte: new Date(Date.now() - REDISTRIBUTION_INTERVAL) }
+				})
+			};
+
+			structures.processed = structures.count - structures.pending;
+
+			const byteCount = {
+				pending: await mongo.Structures.count({ bytesCount: null })
+			};
+
+			byteCount.processed = structures.count - byteCount.pending;
+
+			const multiFiles = {
+				count: await mongo.Structures.count({
+					bytesCount: { $lte: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE }
+				}),
+				pending: await mongo.Structures.count({
+					result: null,
+					bytesCount: { $lte: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE }
+				}),
+				processing: await mongo.Structures.count({
+					result: null,
+					bytesCount: { $lte: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE },
+					lastPing: { $gte: new Date(Date.now() - REDISTRIBUTION_INTERVAL) }
+				})
+			};
+
+			multiFiles.processed = multiFiles.count - multiFiles.pending;
+
+			const singleFile = {
+				count: await mongo.Structures.count({
+					bytesCount: { $gt: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE }
+				}),
+				pending: await mongo.Structures.count({
+					result: null,
+					bytesCount: { $gt: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE }
+				}),
+				processing: await mongo.Structures.count({
+					result: null,
+					bytesCount: { $gt: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE },
+					lastPing: { $gte: new Date(Date.now() - REDISTRIBUTION_INTERVAL) }
+				})
+			};
+
+			singleFile.processed = singleFile.count - singleFile.pending;
+
+			res.status(200).json({
+				structures,
+				byteCount,
+				multiFiles,
+				singleFile
 			});
-			res.status(200).json({ count, pending, processing, processed: count - pending });
 		} catch (error) {
 			console.error(error);
 			res.status(500).json(error);
@@ -108,8 +158,12 @@ class Structures {
 				{ filename: true, _id: true }
 			).limit(qty_cpus);
 
-			if (!results.length)
-				return res.status(204).end();
+			if (!results.length) {
+				return res.status(200).json({
+					filenames: [],
+					processingMode: processorInfo.processingMode
+				});
+			}
 
 			const distributedAt = new Date();
 			const lastPing = new Date();

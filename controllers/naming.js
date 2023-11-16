@@ -47,7 +47,8 @@ class Naming {
 			$or: [
 				{ lastPing: null },
 				{ lastPing: { $lt: new Date(Date.now() - REDISTRIBUTION_INTERVAL) } }
-			]
+			],
+			bytesCount: { $ne: null }
 		});
 
 		const pendingSingleFileStructures = await mongo.Structures.count({
@@ -62,7 +63,16 @@ class Naming {
 		const pendingMultiFileStructures = pendingStructures - pendingSingleFileStructures;
 
 		// Processadores com a maior quantidade de núcleos devem ter prioridade para processar estruturas grandes
-		const processors = Array.from(this.registeredProcessors.values()).sort((a, b) => b.qtyCPUs - a.qtyCPUs);
+		const processors = Array.from(this.registeredProcessors.values()).sort((a, b) => {
+			const cpuComparison = b.qtyCPUs - a.qtyCPUs;
+			if (cpuComparison !== 0)
+				return b.qtyCPUs - a.qtyCPUs;
+
+			// Caso o número de processadores seja igual, dá prioridade para o processador que tem mais chance de
+			// estar ativo com base na data da última comunicação dele com o servidor
+			return b.lastContact - a.lastContact;
+		});
+
 		let qtyDesiredSingleFileProcessors = Math.ceil(pendingSingleFileStructures / pendingStructures * processors.length);
 
 		// Se só tem um processador, dá prioridade para o tipo de processamento que tem mais estruturas pendentes
