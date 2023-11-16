@@ -5,9 +5,7 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "nodemon index.js",
-		"mongo": "node structures-extractor/build-mongo-collections.js",
-		"extract-structures": "node structures-extractor/extract-structures.js",
-		"get-structure-sizes": "node structures-extractor/structures-size/get-structure-sizes.js"
+		"structures-extractor": "node structures-extractor/index.js"
 	},
 	"author": "Lucas Rassilan Vilanova",
 	"license": "ISC",
@@ -23,6 +21,7 @@
 		"jsonwebtoken": "^9.0.2",
 		"mongoose": "^7.5.0",
 		"morgan": "^1.10.0",
+		"node-cron": "^3.0.3",
 		"uuid": "^9.0.1"
 	},
 	"devDependencies": {

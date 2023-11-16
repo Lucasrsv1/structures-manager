@@ -1,7 +1,8 @@
 const axios = require("axios");
 const chalk = require("chalk");
 
-const _timeFormat = ms => chalk.bold(chalk.red(`${ms} ms`));
+const { timeFormat } = require("../../../utils/time-format");
+
 const _sizeFormat = bytes => chalk.bold(chalk.magenta(`${bytes} bytes`));
 
 const RCSB_URL = process.env.RCSB_URL;
@@ -24,7 +25,7 @@ async function getStructureSize (structure) {
 
 		const bytesCount = response.headers.get("Content-Length");
 
-		console.log(`[${structure}] Structure size is ${_sizeFormat(bytesCount)} (${_timeFormat(Date.now() - start)})`);
+		console.log(`[${structure}] Structure size is ${_sizeFormat(bytesCount)} (${timeFormat(Date.now() - start)})`);
 		return bytesCount;
 	} catch (error) {
 		console.error(`[${structure}] Error getting structure size:`, error);

@@ -1,9 +1,3 @@
-// Configura variáveis de ambiente o mais cedo possível
-require("dotenv").config();
-
-// Configura estampa de tempo dos logs
-require("console-stamp")(console, { format: ":date(yyyy-mm-dd HH:MM:ss.l).yellow :label" });
-
 const os = require("os");
 const { createWorker } = require("./create-size-worker");
 
@@ -121,7 +115,7 @@ async function run () {
 	run();
 }
 
-async function start () {
+async function getStructuresSize () {
 	while (!mongo.connected)
 		await sleep(500);
 
@@ -129,10 +123,12 @@ async function start () {
 
 	createWorker(CHILDREN, onMessageFromWorker, QTY_CPUS * 2);
 
-	await sleep(5000);
-	run();
+	// Aguarda todos os processos filhos estarem prontos
+	while (CHILDREN.some(c => !c.isReady))
+		await sleep(1000);
 
+	run();
 	console.log(`Structures size getter started with interval of ${RUN_INTERVAL} ms`);
 }
 
-start();
+module.exports = { getStructuresSize };

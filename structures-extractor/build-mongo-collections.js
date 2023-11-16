@@ -1,46 +1,59 @@
-// Configura variáveis de ambiente o mais cedo possível
-require("dotenv").config();
-
-// Configura estampa de tempo dos logs
-require("console-stamp")(console, { format: ":date(yyyy-mm-dd HH:MM:ss.l).yellow :label" });
-
-const chalk = require("chalk");
-
-const start = Date.now();
-
 const mongo = require("../mongo");
-const structuresJson = require("../structures.json");
+const { timeFormat } = require("../utils/time-format");
 
-const _timeFormat = ms => chalk.bold(chalk.red(`${ms} ms`));
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 
-(async () => {
-	while (!mongo.connected)
+/**
+ * @param {string[]} structuresList
+ */
+async function updateMongoStructuresList (structuresList) {
+	const start = Date.now();
+
+	while (!mongo.connected) {
+		console.info("Waiting for mongo connection...");
 		await sleep(500);
+	}
 
 	try {
 		const structuresExists = (await mongo.client.db.listCollections({ name: "structures" }).toArray()).length > 0;
 		const minDistanceExists = (await mongo.client.db.listCollections({ name: "min-distance" }).toArray()).length > 0;
 
-		if (structuresExists) {
-			console.log("Cleaning collection structures...");
-			await mongo.Structures.deleteMany();
-		} else {
+		if (!structuresExists) {
 			console.log("Creating collection structures...");
 			await mongo.Structures.createCollection();
 		}
 
-		if (minDistanceExists) {
-			console.log("Cleaning collection min-distance...");
-			await mongo.MinDistance.deleteMany();
-		} else {
+		if (!minDistanceExists) {
 			console.log("Creating collection min-distance...");
 			await mongo.MinDistance.createCollection();
 		}
 
-		console.log("Inserting structures...");
+		const hasMinDistance = (await mongo.MinDistance.find({})).length > 0;
+		if (!hasMinDistance) {
+			console.log("Inserting empty min distance document...");
+			await mongo.MinDistance.insertMany([{ result: Infinity }]);
+		}
+
+		const existentStructures = await mongo.Structures.find({}, { filename: true });
+		console.log(`${existentStructures.length} structures already exist in mongo`);
+
+		console.log("Identifying new structures...");
+		for (const structure of existentStructures) {
+			const structureIdx = structuresList.indexOf(structure.filename);
+			if (structureIdx >= 0)
+				structuresList.splice(structureIdx, 1);
+			else
+				console.log(structure.filename, "is not in the list of structures anymore");
+		}
+
+		if (!structuresList.length) {
+			console.log("Nothing new to insert in mongo.");
+			return true;
+		}
+
+		console.log(`Inserting ${structuresList.length} structures...`);
 		const bulkOp = mongo.Structures.collection.initializeUnorderedBulkOp();
-		for (const filename of structuresJson) {
+		for (const filename of structuresList) {
 			bulkOp.insert({
 				filename,
 				bytesCount: null,
@@ -55,13 +68,13 @@ const sleep = ms => new Promise(res => setTimeout(res, ms));
 
 		await bulkOp.execute();
 
-		console.log("Inserting empty min distance document...");
-		await mongo.MinDistance.insertMany([{ result: Infinity }]);
-
-		console.log(`Finished in ${_timeFormat(Date.now() - start)}.`);
-		process.exit(0);
+		console.log(`Finished updating mongo in ${timeFormat(Date.now() - start)}.`);
+		return true;
 	} catch (error) {
-		console.error("Error building mongo collections.", error);
-		process.exit(1);
+		console.error("Error updating mongo:", error);
+		return false;
 	}
-})();
+}
+
+module.exports = { updateMongoStructuresList };
+

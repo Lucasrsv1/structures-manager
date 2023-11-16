@@ -21,7 +21,6 @@ process.on("message", async message => {
 	_sendResponse(message.filename, true, size);
 });
 
-
 /**
  * Envia o resultado do processamento para o processo pai
  * @param {string} structure Nome do arquivo comprimido da estrutura

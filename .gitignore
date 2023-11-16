@@ -1,4 +1,4 @@
 node_modules
-structures-extractor/current_file_holdings.json
+structures-extractor/downloaded-files/*
 
 !.gitkeep
