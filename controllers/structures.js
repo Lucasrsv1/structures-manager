@@ -58,86 +58,88 @@ class Structures {
 	 */
 	async count (req, res) {
 		try {
-			const structures = {
-				count: await mongo.Structures.count(),
-				pending: await mongo.Structures.count({ result: null }),
-				processing: await mongo.Structures.count({
+			let statistics = {};
+			let minDistance = {};
+			const structures = {};
+			const byteCount = {};
+			const multiFiles = {};
+			const singleFile = {};
+
+			const promises = [
+				mongo.Structures.count().then(c => structures.count = c),
+				mongo.Structures.count({ result: null }).then(c => structures.pending = c),
+				mongo.Structures.count({
 					result: null,
 					lastPing: { $gte: new Date(Date.now() - REDISTRIBUTION_INTERVAL) }
-				})
-			};
+				}).then(c => structures.processing = c),
 
-			structures.processed = structures.count - structures.pending;
+				mongo.Structures.count({ bytesCount: null }).then(c => byteCount.pending = c),
 
-			const byteCount = {
-				pending: await mongo.Structures.count({ bytesCount: null })
-			};
-
-			byteCount.processed = structures.count - byteCount.pending;
-
-			const multiFiles = {
-				count: await mongo.Structures.count({
+				mongo.Structures.count({
 					bytesCount: { $lte: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE }
-				}),
-				pending: await mongo.Structures.count({
+				}).then(c => multiFiles.count = c),
+				mongo.Structures.count({
 					result: null,
 					bytesCount: { $lte: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE }
-				}),
-				processing: await mongo.Structures.count({
+				}).then(c => multiFiles.pending = c),
+				mongo.Structures.count({
 					result: null,
 					bytesCount: { $lte: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE },
 					lastPing: { $gte: new Date(Date.now() - REDISTRIBUTION_INTERVAL) }
-				})
-			};
+				}).then(c => multiFiles.processing = c),
 
-			multiFiles.processed = multiFiles.count - multiFiles.pending;
-
-			const singleFile = {
-				count: await mongo.Structures.count({
+				mongo.Structures.count({
 					bytesCount: { $gt: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE }
-				}),
-				pending: await mongo.Structures.count({
+				}).then(c => singleFile.count = c),
+				mongo.Structures.count({
 					result: null,
 					bytesCount: { $gt: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE }
-				}),
-				processing: await mongo.Structures.count({
+				}).then(c => singleFile.pending = c),
+				mongo.Structures.count({
 					result: null,
 					bytesCount: { $gt: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE },
 					lastPing: { $gte: new Date(Date.now() - REDISTRIBUTION_INTERVAL) }
-				})
-			};
+				}).then(c => singleFile.processing = c),
 
-			singleFile.processed = singleFile.count - singleFile.pending;
-
-			const statistics = await mongo.Structures.aggregate([
-				{ $match: { result: { $ne: null } } },
-				{
-					$group: {
-						_id: "",
-						minProcessingTime: { $min: "$processingTime" },
-						avgProcessingTime: { $avg: "$processingTime" },
-						maxProcessingTime: { $max: "$processingTime" },
-						minSize: { $min: "$bytesCount" },
-						avgSize: { $avg: "$bytesCount" },
-						maxSize: { $max: "$bytesCount" },
-						minRatio: {
-							$min: {
-								$divide: ["$bytesCount", "$processingTime"]
-							}
-						},
-						maxRatio: {
-							$max: {
-								$divide: ["$bytesCount", "$processingTime"]
-							}
-						},
-						avgRatio: {
-							$avg: {
-								$divide: ["$bytesCount", "$processingTime"]
+				mongo.Structures.aggregate([
+					{ $match: { result: { $ne: null } } },
+					{
+						$group: {
+							_id: "",
+							minProcessingTime: { $min: "$processingTime" },
+							avgProcessingTime: { $avg: "$processingTime" },
+							maxProcessingTime: { $max: "$processingTime" },
+							minSize: { $min: "$bytesCount" },
+							avgSize: { $avg: "$bytesCount" },
+							maxSize: { $max: "$bytesCount" },
+							minRatio: {
+								$min: {
+									$divide: ["$bytesCount", "$processingTime"]
+								}
+							},
+							maxRatio: {
+								$max: {
+									$divide: ["$bytesCount", "$processingTime"]
+								}
+							},
+							avgRatio: {
+								$avg: {
+									$divide: ["$bytesCount", "$processingTime"]
+								}
 							}
 						}
 					}
-				}
-			]);
+				]).then(result => statistics = result),
+
+				mongo.MinDistance.find({}).then(result => minDistance = result)
+			];
+
+			await Promise.all(promises);
+
+			structures.processed = Math.max(structures.count, structures.pending) - structures.pending;
+			byteCount.processed = Math.max(structures.count, byteCount.pending) - byteCount.pending;
+			multiFiles.processed = Math.max(multiFiles.count, multiFiles.pending) - multiFiles.pending;
+			singleFile.processed = Math.max(singleFile.count, singleFile.pending) - singleFile.pending;
 
 			res.status(200).json({
 				byteCount,
@@ -146,21 +148,22 @@ class Structures {
 				structures,
 				statistics: {
 					processingTime: {
-						avg: statistics[0].avgProcessingTime,
-						max: statistics[0].maxProcessingTime,
-						min: statistics[0].minProcessingTime
+						avg: statistics[0] ? statistics[0].avgProcessingTime : 0,
+						max: statistics[0] ? statistics[0].maxProcessingTime : 0,
+						min: statistics[0] ? statistics[0].minProcessingTime : 0
 					},
 					ratio: {
-						avg: statistics[0].avgRatio,
-						max: statistics[0].maxRatio,
-						min: statistics[0].minRatio
+						avg: statistics[0] ? statistics[0].avgRatio : 0,
+						max: statistics[0] ? statistics[0].maxRatio : 0,
+						min: statistics[0] ? statistics[0].minRatio : 0
 					},
 					size: {
-						avg: statistics[0].avgSize,
-						max: statistics[0].maxSize,
-						min: statistics[0].minSize
+						avg: statistics[0] ? statistics[0].avgSize : 0,
+						max: statistics[0] ? statistics[0].maxSize : 0,
+						min: statistics[0] ? statistics[0].minSize : 0
 					}
-				}
+				},
+				minDistance: minDistance.length ? minDistance[0].result : null
 			});
 		} catch (error) {
 			console.error(error);

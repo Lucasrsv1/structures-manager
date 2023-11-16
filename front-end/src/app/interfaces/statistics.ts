@@ -26,6 +26,8 @@ export interface IStatistics {
 	multiFiles: ICount;
 	singleFile: ICount;
 	structures: ICount;
+
+	minDistance: number | null;
 }
 
 export function getEmptyStatistics (): IStatistics {
@@ -57,6 +59,8 @@ export function getEmptyStatistics (): IStatistics {
 			pending: 0,
 			processing: 0,
 			processed: 0
-		}
+		},
+
+		minDistance: null
 	};
 }
