@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const MONGO_HOST = process.env.MONGO_HOST || "127.0.0.1:27017";
+const MONGO_COLLECTION = process.env.MONGO_COLLECTION || "structures-manager";
 
 let connected = false;
 const client = mongoose.connection;
@@ -28,7 +29,7 @@ client.on("disconnected", () => {
 async function forceConnect () {
 	try {
 		await mongoose.connect(
-			`mongodb://${MONGO_HOST}/structures-manager`,
+			`mongodb://${MONGO_HOST}/${MONGO_COLLECTION}`,
 			{ useNewUrlParser: true, useUnifiedTopology: true }
 		);
 	} catch (error) {
