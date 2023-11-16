@@ -22,7 +22,17 @@
 
 ## Montagem do Banco de Dados de Gerenciamento
 
-1. Configure a chave `MONGO_HOST` no arquivo de variáveis de ambiente (`.env`) para definir a URL de conexão com o MongoDB que será utilizada. Alguns exemplos de configurações possíveis são:
+1. Opcionalmente, você pode restaurar um backup do banco de dados com a maioria das estruturas já registradas com os seus devidos tamanhos de arquivos para adiantar o processamento. Se quiser fazer isso, baixe e extraia o backup do link abaixo e em seguida execute o comando a seguir para restaurar o backup.
+
+	- [structures-manager-bytes-count-finished-bkp.zip](https://drive.google.com/file/d/1v9tbg1lCpjGx1quSGy-MJK9wEk27cRj-/view?usp=sharing)
+
+	```sh
+	mongorestore -d <collection-name> .\mongodump\structures-manager-bytes-count-finished-bkp\
+	```
+
+	**Observação:** no comando acima, `<collection-name>` deve ser substituído pelo nome da collection do MongoDB que você irá utilizada. O nome padrão é `structures-manager`. Além disso, a pasta `mongodump` é a pasta que foi extraída do arquivo comprimido baixado.
+
+2. Configure a chave `MONGO_HOST` no arquivo de variáveis de ambiente (`.env`) para definir a URL de conexão com o MongoDB que será utilizada. Alguns exemplos de configurações possíveis são:
 
 	```sh
 	MONGO_HOST = 'HOST:PORT'
@@ -34,9 +44,9 @@
 
 	**Observação:** o valor padrão é `'127.0.0.1:27017'`.
 
-2. Configure a chave `MONGO_COLLECTION` no arquivo de variáveis de ambiente (`.env`) para definir o nome que desejar para a collection do MongoDB que será utilizada. Você pode pular este passo se você quiser usar o valor padrão `'structures-manager'`.
+3. Configure a chave `MONGO_COLLECTION` no arquivo de variáveis de ambiente (`.env`) para definir o nome que desejar para a collection do MongoDB que será utilizada. Você pode pular este passo se você quiser usar o valor padrão `'structures-manager'`.
 
-3. Em seguida execute um dos seguintes comandos para iniciar o processo de extração e atualização da lista de estruturas a serem processadas no MongoDB:
+4. Em seguida execute um dos seguintes comandos para iniciar o processo de extração e atualização da lista de estruturas a serem processadas no MongoDB:
 
 	```sh
 	node structures-extractor/index.js
