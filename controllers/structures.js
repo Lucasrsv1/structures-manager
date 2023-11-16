@@ -109,11 +109,58 @@ class Structures {
 
 			singleFile.processed = singleFile.count - singleFile.pending;
 
+			const statistics = await mongo.Structures.aggregate([
+				{ $match: { result: { $ne: null } } },
+				{
+					$group: {
+						_id: "",
+						minProcessingTime: { $min: "$processingTime" },
+						avgProcessingTime: { $avg: "$processingTime" },
+						maxProcessingTime: { $max: "$processingTime" },
+						minSize: { $min: "$bytesCount" },
+						avgSize: { $avg: "$bytesCount" },
+						maxSize: { $max: "$bytesCount" },
+						minRatio: {
+							$min: {
+								$divide: ["$bytesCount", "$processingTime"]
+							}
+						},
+						maxRatio: {
+							$max: {
+								$divide: ["$bytesCount", "$processingTime"]
+							}
+						},
+						avgRatio: {
+							$avg: {
+								$divide: ["$bytesCount", "$processingTime"]
+							}
+						}
+					}
+				}
+			]);
+
 			res.status(200).json({
-				structures,
 				byteCount,
 				multiFiles,
-				singleFile
+				singleFile,
+				structures,
+				statistics: {
+					processingTime: {
+						avg: statistics[0].avgProcessingTime,
+						max: statistics[0].maxProcessingTime,
+						min: statistics[0].minProcessingTime
+					},
+					ratio: {
+						avg: statistics[0].avgRatio,
+						max: statistics[0].maxRatio,
+						min: statistics[0].minRatio
+					},
+					size: {
+						avg: statistics[0].avgSize,
+						max: statistics[0].maxSize,
+						min: statistics[0].minSize
+					}
+				}
 			});
 		} catch (error) {
 			console.error(error);
