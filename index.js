@@ -12,6 +12,10 @@ const morgan = require("morgan");
 
 const routes = require("./routes");
 
+// Define o tamanho máximo dos arquivos que podem ser processados via compartilhamento da CPU entre múltiplos arquivos,
+// ou seja, acima desse tamanho, a CPU inteira será alocada para processar um único arquivo, cada núcleo processando um pedaço
+global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE = 1 * 1024 * 1024; // 1MB
+
 const app = express();
 app.set("port", process.env.PORT || 3000);
 

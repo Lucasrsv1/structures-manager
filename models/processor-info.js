@@ -8,16 +8,17 @@ const ProcessingModes = Object.freeze({
 });
 
 class ProcessorInfo {
-	constructor (id, host) {
+	constructor (id, host, qtyCPUs) {
 		this.id = id;
 		this.host = host;
+		this.qtyCPUs = qtyCPUs;
 		this.files = [];
-		this.processingType = ProcessingModes.UNDEFINED;
+		this.processingMode = ProcessingModes.UNDEFINED;
 		this.lastContact = Date.now();
 	}
 
-	setProcessingType (processingType) {
-		this.processingType = processingType;
+	setProcessingMode (processingMode) {
+		this.processingMode = processingMode;
 	}
 
 	isProcessingFile (filename) {

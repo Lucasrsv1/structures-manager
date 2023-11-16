@@ -1,7 +1,12 @@
-const { sign, verify } = require("jsonwebtoken");
+const { body } = require("express-validator");
 const { v4: uuidv4 } = require("uuid");
 
-const { ProcessorInfo } = require("../models/processor-info");
+const { sign, verify } = require("jsonwebtoken");
+
+const mongo = require("../mongo");
+
+const { ProcessorInfo, ProcessingModes } = require("../models/processor-info");
+const { isRequestInvalid } = require("../utils/http-validation");
 
 const KEY_TOKEN = uuidv4();
 
@@ -14,7 +19,18 @@ class Naming {
 		 */
 		this.registeredProcessors = new Map();
 
-		this.interval = setInterval(this.garbageCollectorJob.bind(this), 30000);
+		this.validations = {
+			registerProcessor: [
+				body("qtyCPUs").isInt({ min: 1 }).withMessage("Invalid quantity of CPU Cores.")
+			]
+		};
+
+		this.interval = setInterval(this.intervalCycle.bind(this), 30000);
+	}
+
+	intervalCycle () {
+		this.garbageCollectorJob();
+		this.updateProcessingModes();
 	}
 
 	garbageCollectorJob () {
@@ -23,6 +39,42 @@ class Naming {
 			if (Date.now() - processorInfo.lastContact > REDISTRIBUTION_INTERVAL)
 				this.registeredProcessors.delete(id);
 		});
+	}
+
+	async updateProcessingModes () {
+		const pendingStructures = await mongo.Structures.count({
+			result: null,
+			$or: [
+				{ lastPing: null },
+				{ lastPing: { $lt: new Date(Date.now() - REDISTRIBUTION_INTERVAL) } }
+			]
+		});
+
+		const pendingSingleFileStructures = await mongo.Structures.count({
+			result: null,
+			$or: [
+				{ lastPing: null },
+				{ lastPing: { $lt: new Date(Date.now() - REDISTRIBUTION_INTERVAL) } }
+			],
+			bytesCount: { $gt: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE }
+		});
+
+		const pendingMultiFileStructures = pendingStructures - pendingSingleFileStructures;
+
+		// Processadores com a maior quantidade de núcleos devem ter prioridade para processar estruturas grandes
+		const processors = Array.from(this.registeredProcessors.values()).sort((a, b) => b.qtyCPUs - a.qtyCPUs);
+		let qtyDesiredSingleFileProcessors = Math.ceil(pendingSingleFileStructures / pendingStructures * processors.length);
+
+		// Se só tem um processador, dá prioridade para o tipo de processamento que tem mais estruturas pendentes
+		if (processors.length === 1 && pendingSingleFileStructures < pendingMultiFileStructures)
+			qtyDesiredSingleFileProcessors = 0;
+
+		for (let i = 0; i < processors.length; i++) {
+			if (i < qtyDesiredSingleFileProcessors)
+				processors[i].setProcessingMode(ProcessingModes.SINGLE_FILE);
+			else
+				processors[i].setProcessingMode(ProcessingModes.MULTI_FILES);
+		}
 	}
 
 	/**
@@ -38,11 +90,16 @@ class Naming {
 	 * @param {import("express").Response} res
 	 */
 	async registerProcessor (req, res) {
+		if (isRequestInvalid(req, res)) return;
+
 		const id = uuidv4();
-		this.registeredProcessors.set(id, new ProcessorInfo(id, req.headers.host));
+		this.registeredProcessors.set(id, new ProcessorInfo(id, req.headers.host, req.body.qtyCPUs));
+		await this.updateProcessingModes();
 
 		const token = sign({ id }, KEY_TOKEN);
-		res.status(201).json({ token, id });
+		const processingMode = this.registeredProcessors.get(id).processingMode;
+
+		res.status(201).json({ id, token, processingMode });
 	}
 
 	/**

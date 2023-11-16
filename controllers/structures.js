@@ -10,10 +10,6 @@ const { ProcessorInfo } = require("../models/processor-info");
 // Define a quantidade máxima de arquivos que podem ser enviados a cada requisição
 const MAXIMUM_FILES_PER_REQUEST = 20;
 
-// Define o tamanho máximo dos arquivos que podem ser processados via compartilhamento da CPU entre múltiplos arquivos,
-// ou seja, acima desse tamanho, a CPU inteira será alocada para processar um único arquivo, cada núcleo processando um pedaço
-const MAXIMUM_SIZE_FOR_MULTI_FILES_MODE = 1 * 1024 * 1024; // 1MB
-
 // Define o tempo máximo desde o último ping do processador para que um arquivo seja redistribuído para outro processador
 const REDISTRIBUTION_INTERVAL = process.env.REDISTRIBUTION_INTERVAL || (5 * 60 * 1000);
 
@@ -27,14 +23,14 @@ class Structures {
 			],
 			saveResult: [
 				naming.ensureAuthorized.bind(naming),
-				body("filename").isString().isLength({ min: "1" }).withMessage("Invalid structure filename."),
+				body("filename").isString().isLength({ min: 1 }).withMessage("Invalid structure filename."),
 				body("result").isNumeric().withMessage("Invalid processing result.").toFloat(),
 				body("processingTime").isNumeric().withMessage("Invalid processing time.").toInt()
 			],
 			processorPing: [
 				naming.ensureAuthorized.bind(naming),
-				body("filenames").isArray({ min: "1" }).withMessage("Invalid array of filenames."),
-				body("filenames.*").isString().isLength({ min: "1" }).withMessage("Invalid structure filename.")
+				body("filenames").isArray({ min: 1 }).withMessage("Invalid array of filenames."),
+				body("filenames.*").isString().isLength({ min: 1 }).withMessage("Invalid structure filename.")
 			]
 		};
 	}
@@ -102,15 +98,18 @@ class Structures {
 
 			if (req.params.mode) {
 				if (req.params.mode.toUpperCase() === "MULTI_FILES")
-					filters.bytesCount = { $lte: MAXIMUM_SIZE_FOR_MULTI_FILES_MODE };
+					filters.bytesCount = { $lte: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE };
 				else if (req.params.mode.toUpperCase() === "SINGLE_FILE")
-					filters.bytesCount = { $gt: MAXIMUM_SIZE_FOR_MULTI_FILES_MODE };
+					filters.bytesCount = { $gt: global.MAXIMUM_SIZE_FOR_MULTI_FILES_MODE };
 			}
 
 			const results = await mongo.Structures.find(
 				filters,
 				{ filename: true, _id: true }
 			).limit(qty_cpus);
+
+			if (!results.length)
+				return res.status(204).end();
 
 			const distributedAt = new Date();
 			const lastPing = new Date();
@@ -123,7 +122,10 @@ class Structures {
 				const filenames = results.map(r => r.filename);
 
 				processorInfo.addFiles(filenames);
-				return res.status(200).json({ filenames });
+				return res.status(200).json({
+					filenames,
+					processingMode: processorInfo.processingMode
+				});
 			}
 
 			console.error("Distribution inconsistency detected.", updated.modifiedCount, "!==", results.length);
@@ -168,7 +170,11 @@ class Structures {
 				{ lastPing: new Date() }
 			);
 
-			res.status(202).json({ success: updated.modifiedCount > 0, filesNotAllowed });
+			res.status(202).json({
+				success: updated.modifiedCount > 0,
+				filesNotAllowed,
+				processingMode: processorInfo.processingMode
+			});
 		} catch (error) {
 			console.error(error);
 			res.status(500).json(error);
@@ -220,7 +226,11 @@ class Structures {
 			);
 
 			processorInfo.finishedFile(req.body.filename);
-			res.status(201).json({ success: updated.modifiedCount > 0, isNewMinDistance: updatedMinDistance.modifiedCount > 0 });
+			res.status(201).json({
+				success: updated.modifiedCount > 0,
+				isNewMinDistance: updatedMinDistance.modifiedCount > 0,
+				processingMode: processorInfo.processingMode
+			});
 		} catch (error) {
 			console.error(error);
 			res.status(500).json(error);
