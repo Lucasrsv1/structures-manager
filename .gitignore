@@ -1,4 +1,5 @@
 node_modules
 structures-extractor/downloaded-files/*
+public/*
 
 !.gitkeep

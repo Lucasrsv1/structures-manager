@@ -1,0 +1,82 @@
+/* You can add global styles to this file, and also import other style files */
+
+/* Global style file */
+@use "sass:math";
+
+@import "./palette.scss";
+
+$primary: #4f55fc;
+$secondary: #277553;
+$dark: #6C757D;
+
+$min-contrast-ratio: 2.5;
+
+:root {
+	--primary: $primary;
+	--secondary: $secondary;
+	--dark: $dark;
+}
+
+$custom-control-indicator-size: 1.13rem;
+$custom-control-indicator-border-width: 1px;
+$custom-switch-width: $custom-control-indicator-size * 2.15;
+$custom-switch-indicator-border-radius: math.div($custom-control-indicator-size, 2);
+$custom-switch-indicator-size: subtract(
+	$custom-control-indicator-size,
+	$custom-control-indicator-border-width * 4
+);
+
+/* Importing Bootstrap SCSS file. */
+@import "node_modules/bootstrap/scss/bootstrap";
+
+/* Importing Datepicker SCSS file. */
+@import "node_modules/ngx-bootstrap/datepicker/bs-datepicker";
+
+/* Importa o DataTables */
+@import "node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css";
+
+/* === Toggle/Switch === */
+
+.custom-switch .custom-control-label::before {
+	height: 1.37rem;
+}
+
+.custom-control-input:checked ~ .custom-control-label::after {
+	margin-left: -3px;
+}
+
+/* === Block UI === */
+
+div.block-ui-wrapper {
+	background-color: rgba(0, 0, 0, 0.5);
+
+	.loader {
+		border-color: #FFF;
+		border-left-color: var(--color-primary-0);
+	}
+}
+
+div.block-ui-spinner .message {
+	color: #FFF;
+}
+
+/* === DataTables === */
+
+table.dataTable thead th, table.dataTable thead td {
+	padding: 10px 18px;
+}
+
+table.dataTable tbody th, table.dataTable tbody td {
+	padding: 8px 10px;
+}
+
+table.dataTable {
+	border-top: 0;
+	min-width: 0;
+	width: 100%;
+}
+
+.dataTables_wrapper > .row {
+	margin-left: 0;
+	margin-right: 0;
+}

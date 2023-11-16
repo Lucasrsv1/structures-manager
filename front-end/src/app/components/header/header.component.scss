@@ -1,0 +1,50 @@
+.navbar {
+	background-color: var(--color-primary-0);
+}
+
+.navbar-nav .nav-link:not(.active):hover span,
+.navbar-nav .nav-link.user:hover span {
+	text-decoration: underline;
+}
+
+.navbar-nav .nav-link {
+	span,
+	fa-icon {
+		vertical-align: middle;
+	}
+
+	fa-icon {
+		font-size: 22px;
+
+		&.logout-icon {
+			font-size: 20px;
+		}
+	}
+}
+
+.navbar-brand {
+	fa-icon {
+		font-size: 30px;
+	}
+
+	span {
+		display: inline-block;
+		position: relative;
+		top: -4px;
+	}
+}
+
+.navbar-toggler {
+	border-color: white;
+
+	fa-icon {
+		font-size: 21px;
+		color: white;
+	}
+}
+
+.normal-cursor,
+.normal-cursor:hover,
+.normal-cursor:active {
+	cursor: default;
+}

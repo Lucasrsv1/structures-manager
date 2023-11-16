@@ -1,0 +1,259 @@
+<div class="container pt-3 pb-3">
+	<div class="card p-3">
+		<div class="d-flex flex-row justify-content-between align-items-center mb-2 ps-3 pe-3">
+			<h1 class="text-primary">Statistics</h1>
+			<div>
+				<button class="btn btn-primary" (click)="refresh()" title="Atualizar">
+					<fa-icon [icon]="faRefresh"></fa-icon>
+					Atualizar
+				</button>
+			</div>
+		</div>
+
+		<div class="row mx-1">
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Qty. of Structures</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.structures.count"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Pending Structures</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.structures.pending"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Processed Structures</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.structures.processed"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row mx-1">
+			<div class="col-12 col-sm-6 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Pending Size Info</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.byteCount.pending"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-6 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Has Size Info</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.byteCount.processed"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row mx-1">
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Qty. of Small Files</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.multiFiles.count"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Pending Small Files</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.multiFiles.pending"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Processed Small Files</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.multiFiles.processed"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row mx-1">
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Qty. of Big Files</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.singleFile.count"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Pending Big Files</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.singleFile.pending"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Processed Big Files</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.singleFile.processed"></app-counter>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row mx-1">
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Min. Processing Time</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.statistics.processingTime.min"></app-counter> ms
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Avg. Processing Time</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.statistics.processingTime.avg"></app-counter> ms
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Max. Processing Time</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.statistics.processingTime.max"></app-counter> ms
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row mx-1">
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Min. File Size</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="(statistics.statistics.size.min / 1024)"></app-counter> KB
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Avg. File Size</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="(statistics.statistics.size.avg / 1024)"></app-counter> KB
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Max. File Size</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="(statistics.statistics.size.max / 1024)"></app-counter> KB
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="row mx-1">
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Min. Processing Speed</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.statistics.ratio.min"></app-counter> B/s
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Avg. Processing Speed</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.statistics.ratio.avg"></app-counter> B/s
+						</p>
+					</div>
+				</div>
+			</div>
+			<div class="col-12 col-sm-4 mb-2">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Max. Processing Speed</h5>
+						<p class="card-text fs-2">
+							<app-counter [target]="statistics.statistics.ratio.max"></app-counter> B/s
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<h1 class="text-primary mt-3 ps-3">Processors</h1>
+
+		<div class="w-100 overflow-auto py-2">
+			<table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="row-border table-striped table-bordered">
+				<thead>
+					<tr>
+						<th>UUID</th>
+						<th>Host</th>
+						<th>Processing Mode</th>
+						<th>Qty. of CPUs</th>
+						<th>Last Contact</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let processor of processors">
+						<td>{{ processor.id }}</td>
+						<td>{{ processor.host }}</td>
+						<td>{{ processor.processingMode }}</td>
+						<td>{{ processor.qtyCPUs }}</td>
+						<td>{{ processor.lastContact | date:'dd/MM/yyyy HH:mm:ss.SSS' }}</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>

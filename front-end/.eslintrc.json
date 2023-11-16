@@ -1,0 +1,179 @@
+{
+	"root": true,
+	"plugins": ["only-warn"],
+	"ignorePatterns": [
+		"projects/**/*"
+	],
+	"rules": {
+		"no-fallthrough": "warn",
+		"arrow-parens": "off",
+		"no-console": "off",
+		"no-empty": "off",
+		"default-case-last": "warn",
+		"sort-keys": "off",
+		"sort-vars": "off",
+		"sort-imports": [
+			"warn",
+			{
+				"allowSeparatedGroups": true,
+				"ignoreCase": true,
+				"memberSyntaxSortOrder": [
+					"none",
+					"all",
+					"single",
+					"multiple"
+				]
+			}
+		],
+		"quotes": [
+			"warn",
+			"double",
+			{
+				"avoidEscape": true
+			}
+		],
+		"no-trailing-spaces": "warn",
+		"comma-dangle": [
+			"warn",
+			"never"
+		],
+		"no-mixed-spaces-and-tabs": [
+			"warn",
+			"smart-tabs"
+		],
+		"space-before-function-paren": [
+			"warn",
+			"always"
+		],
+		"semi": [
+			"warn",
+			"always"
+		],
+		"indent": [
+			"warn",
+			"tab",
+			{ "SwitchCase": 1 }
+		],
+		"no-irregular-whitespace": "warn",
+		"no-whitespace-before-property": "warn",
+		"no-multi-spaces": "warn",
+		"func-call-spacing": [
+			"warn",
+			"never"
+		],
+		"no-unused-vars": "off",
+		"no-unused-labels": "warn",
+		"no-unused-expressions": "warn",
+		"no-unreachable": "warn",
+		"prefer-const": "warn",
+		"no-const-assign": "warn",
+		"no-var": "warn",
+		"no-new-object": "warn",
+		"object-shorthand": [
+			"warn",
+			"always"
+		],
+		"quote-props": [
+			"warn",
+			"as-needed"
+		],
+		"no-array-constructor": "warn",
+		"array-callback-return": "warn",
+		"no-eval": "warn",
+		"no-useless-escape": "warn",
+		"default-param-last": [
+			"warn"
+		],
+		"no-new-func": "warn",
+		"prefer-spread": "warn",
+		"prefer-arrow-callback": "warn",
+		"arrow-spacing": "warn",
+		"arrow-body-style": [
+			"warn",
+			"as-needed"
+		],
+		"no-confusing-arrow": "warn",
+		"implicit-arrow-linebreak": [
+			"warn",
+			"beside"
+		],
+		"no-useless-constructor": "off",
+		"no-dupe-class-members": "warn",
+		"no-duplicate-imports": "warn",
+		"dot-notation": "warn",
+		"no-unneeded-ternary": "warn",
+		"no-mixed-operators": "warn",
+		"object-curly-spacing": [
+			"warn",
+			"always"
+		],
+		"max-len": "off",
+		"strict": [
+			"warn",
+			"never"
+		],
+		"eol-last": [
+			"warn",
+			"always"
+		],
+		"no-multiple-empty-lines": [
+			"warn",
+			{
+				"max": 3,
+				"maxEOF": 0
+			}
+		],
+		"camelcase": "warn"
+	},
+	"overrides": [
+		{
+			"files": [
+				"*.ts"
+			],
+			"parserOptions": {
+				"project": [
+					"front-end/tsconfig.json"
+				],
+				"createDefaultProgram": true
+			},
+			"extends": [
+				"eslint:recommended",
+				"plugin:@typescript-eslint/recommended",
+				"plugin:@angular-eslint/recommended",
+				"plugin:@angular-eslint/template/process-inline-templates"
+			],
+			"rules": {
+				"@angular-eslint/directive-selector": [
+					"error",
+					{
+						"type": "attribute",
+						"prefix": "app",
+						"style": "camelCase"
+					}
+				],
+				"@angular-eslint/component-selector": [
+					"error",
+					{
+						"type": "element",
+						"prefix": "app",
+						"style": "kebab-case"
+					}
+				],
+				"@angular-eslint/no-empty-lifecycle-method": "off",
+				"@typescript-eslint/no-empty-function": "off",
+				"@typescript-eslint/no-explicit-any": "off",
+				"@typescript-eslint/no-unused-vars": "off"
+			}
+		},
+		{
+			"files": [
+				"*.html"
+			],
+			"extends": [
+				"plugin:@angular-eslint/template/recommended",
+				"plugin:@angular-eslint/template/accessibility"
+			],
+			"rules": {}
+		}
+	]
+}

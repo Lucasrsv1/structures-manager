@@ -1,0 +1,23 @@
+<nav class="navbar navbar-expand-md navbar-dark pt-md-0 pb-md-0 px-3">
+	<div>
+		<button class="navbar-toggler pt-2 pb-2 me-2" type="button" (click)="isMenuCollapsed = !isMenuCollapsed" aria-controls="menu" [attr.aria-expanded]="!isMenuCollapsed" aria-label="Abrir menu">
+			<fa-icon [icon]="faBars"></fa-icon>
+		</button>
+
+		<a class="navbar-brand" title="Structures Manager" [routerLink]="['/']">
+			<fa-icon class="me-2" [icon]="faMagnifyingGlassChart"></fa-icon>
+			<span>Structures Manager</span>
+		</a>
+	</div>
+
+	<div class="navbar-collapse justify-content-between" id="menu" [collapse]="isMenuCollapsed" [isAnimated]="true">
+		<ul class="navbar-nav me-auto mb-0 d-sm-flex">
+			<li class="nav-item">
+				<a class="nav-link" [routerLinkActive]="'active'" [routerLink]="['/home']">
+					<fa-icon class="me-2 d-inline-block d-md-inline" [icon]="faGripHorizontal" title="Dashboard"></fa-icon>
+					<span>Dashboard</span>
+				</a>
+			</li>
+		</ul>
+	</div>
+</nav>

@@ -9,6 +9,7 @@ const cors = require("cors");
 const dayjs = require("dayjs");
 const express = require("express");
 const morgan = require("morgan");
+const path = require("path");
 
 const routes = require("./routes");
 
@@ -33,6 +34,13 @@ app.use(cors({
 }));
 
 app.use("/api", routes);
+
+app.use(express.static(path.join(__dirname, "public")));
+
+// Manda todos as outras requisições para o index.html
+app.get("/*", (req, res) => {
+	res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 app.listen(app.get("port"), () => {
 	console.log("Server is listening at", app.get("port"));

@@ -1,0 +1,10 @@
+.route-content {
+	background: whitesmoke;
+	min-height: 430px;
+}
+
+@media (min-height: 768px) {
+	.route-content {
+		min-height: 520px;
+	}
+}
