@@ -13,6 +13,9 @@ const MAXIMUM_FILES_PER_REQUEST = 20;
 // Define o tempo máximo desde o último ping do processador para que um arquivo seja redistribuído para outro processador
 const REDISTRIBUTION_INTERVAL = process.env.REDISTRIBUTION_INTERVAL || (5 * 60 * 1000);
 
+/**
+ * Gerencia a distribuição de estruturas para os processadores.
+ */
 class Structures {
 	constructor () {
 		this.validations = {
@@ -36,6 +39,7 @@ class Structures {
 	}
 
 	/**
+	 * Lista todas as estruturas do banco de dados.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */
@@ -53,6 +57,7 @@ class Structures {
 	}
 
 	/**
+	 * Extrai estatísticas sobre as estruturas por meio da contagem e categorização delas.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */
@@ -172,6 +177,7 @@ class Structures {
 	}
 
 	/**
+	 * Envia para um processador uma lista de estruturas que ele será responsável por processar.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */
@@ -241,6 +247,7 @@ class Structures {
 	}
 
 	/**
+	 * Recebe de um processador o sinal de vida indicando a continuidade do funcionamento dele.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */
@@ -286,6 +293,7 @@ class Structures {
 	}
 
 	/**
+	 * Recebe de um processador o resultado do processamento de uma estrutura e atualiza a menor distância encontrada até o momento.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */

@@ -1,6 +1,6 @@
 {
 	"name": "structures-manager",
-	"version": "0.0.1",
+	"version": "1.0.0",
 	"description": "Gerenciador de distribuição de arquivos de estruturas de proteínas",
 	"main": "index.js",
 	"scripts": {

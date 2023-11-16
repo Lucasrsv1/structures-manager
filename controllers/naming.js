@@ -8,10 +8,14 @@ const mongo = require("../mongo");
 const { ProcessorInfo, ProcessingModes } = require("../models/processor-info");
 const { isRequestInvalid } = require("../utils/http-validation");
 
+// Chave aleatória para assinatura e validação de tokens de processadores registrados no servidor.
 const KEY_TOKEN = uuidv4();
 
 const REDISTRIBUTION_INTERVAL = process.env.REDISTRIBUTION_INTERVAL || (5 * 60 * 1000);
 
+/**
+ * Mantém um registro de processadores que estão utilizando este servidor mantendo um registro de identificação de cada cliente conectado.
+ */
 class Naming {
 	constructor () {
 		/**
@@ -28,11 +32,17 @@ class Naming {
 		this.interval = setInterval(this.intervalCycle.bind(this), 30000);
 	}
 
+	/**
+	 * Ciclo de atualização e manutenção dos registros de processadores.
+	 */
 	intervalCycle () {
 		this.garbageCollectorJob();
 		this.updateProcessingModes();
 	}
 
+	/**
+	 * Função executada de tempos em tempos para remover processadores que não se comunicam há mais tempo de redistribuição de estruturas.
+	 */
 	garbageCollectorJob () {
 		this.registeredProcessors.forEach((processorInfo, id) => {
 			// Remove processadores que não se comunicam há mais tempo do que o tempo de redistribuição de estruturas
@@ -41,6 +51,10 @@ class Naming {
 		});
 	}
 
+	/**
+	 * Identifica a necessidade de processadores para trabalharem com estruturas grandes e
+	 * define qual modo de processamento cada processador deverá utilizar.
+	 */
 	async updateProcessingModes () {
 		const pendingStructures = await mongo.Structures.count({
 			result: null,
@@ -94,6 +108,7 @@ class Naming {
 	}
 
 	/**
+	 * Lista os processadores registrados no servidor.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */
@@ -102,6 +117,7 @@ class Naming {
 	}
 
 	/**
+	 * Registra um novo processador no servidor.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */
@@ -119,6 +135,7 @@ class Naming {
 	}
 
 	/**
+	 * Remove um processador do servidor.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */
@@ -131,6 +148,7 @@ class Naming {
 	}
 
 	/**
+	 * Verifica se um processador está registrado no servidor e se está autorizado para processar acessar estruturas.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 * @param {import("express").NextFunction} next

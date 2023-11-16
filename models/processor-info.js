@@ -1,4 +1,5 @@
 /**
+ * Modos de processamento de estruturas.
  * @enum {string}
  */
 const ProcessingModes = Object.freeze({

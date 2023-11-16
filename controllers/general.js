@@ -2,6 +2,7 @@ const packageJson = require("../package.json");
 
 class General {
 	/**
+	 * Rota de identificação desse servidor e dessa API.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */
@@ -10,6 +11,7 @@ class General {
 	}
 
 	/**
+	 * Rota para informar a data atual do servidor.
 	 * @param {import("express").Request} req
 	 * @param {import("express").Response} res
 	 */
