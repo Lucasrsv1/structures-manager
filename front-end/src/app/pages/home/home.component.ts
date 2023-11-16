@@ -97,22 +97,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 	public getProcessors (): void {
 		this.processorsService.getProcessors().subscribe({
 			next: processors => {
-				const newProcessors: IProcessors[] = [];
-
-				for (const processor of processors) {
-					const p = this.processors.find(p => p.id === processor.id);
-					if (!p) {
-						newProcessors.push(processor);
-						continue;
-					}
-
-					p.host = processor.host;
-					p.processingMode = processor.processingMode;
-					p.qtyCPUs = processor.qtyCPUs;
-					p.lastContact = processor.lastContact;
-				}
-
-				this.processors.push(...newProcessors);
+				this.processors = processors;
 				this.rerenderDatatables();
 			},
 
