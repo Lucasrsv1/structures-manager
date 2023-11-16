@@ -66,10 +66,16 @@ class Naming {
 		const processors = Array.from(this.registeredProcessors.values()).sort((a, b) => {
 			const cpuComparison = b.qtyCPUs - a.qtyCPUs;
 			if (cpuComparison !== 0)
-				return b.qtyCPUs - a.qtyCPUs;
+				return cpuComparison;
 
-			// Caso o número de processadores seja igual, dá prioridade para o processador que tem mais chance de
-			// estar ativo com base na data da última comunicação dele com o servidor
+			// Caso o número de processadores seja igual, dá prioridade para o processador que está processando uma única estrutura
+			if (a.processingMode === ProcessingModes.SINGLE_FILE && b.processingMode !== ProcessingModes.SINGLE_FILE)
+				return -1;
+			else if (a.processingMode !== ProcessingModes.SINGLE_FILE && b.processingMode === ProcessingModes.SINGLE_FILE)
+				return 1;
+
+			// Caso o número de processadores seja igual e os dois estão operando no mesmo modo, dá prioridade para o processador
+			// que tem mais chance de estar ativo com base na data da última comunicação dele com o servidor
 			return b.lastContact - a.lastContact;
 		});
 
