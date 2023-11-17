@@ -125,7 +125,7 @@ class Naming {
 		if (isRequestInvalid(req, res)) return;
 
 		const id = uuidv4();
-		const remoteHost = `${req.socket.remoteAddress}:${req.socket.remotePort}`;
+		const remoteHost = `${req.headers["x-real-ip"] || req.headers["x-forwarded-for"] || req.socket.remoteAddress}:${req.socket.remotePort}`;
 		this.registeredProcessors.set(id, new ProcessorInfo(id, remoteHost, req.body.qtyCPUs));
 		await this.updateProcessingModes();
 
