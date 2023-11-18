@@ -2,7 +2,7 @@ import { DataTableDirective } from "angular-datatables";
 import { HttpErrorResponse } from "@angular/common/http";
 import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 
-import { Subject } from "rxjs";
+import { forkJoin, Subject } from "rxjs";
 
 import { faRefresh } from "@fortawesome/free-solid-svg-icons";
 import { BlockUI, NgBlockUI } from "ng-block-ui";
@@ -27,6 +27,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 	private dataTable?: DataTableDirective;
 
 	private firstLoad = true;
+	private refreshing = false;
 	private interval?: number;
 
 	public statistics: IStatistics = getEmptyStatistics();
@@ -37,7 +38,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 	public dtOptions: DataTables.Settings = {
 		stateSave: true,
 		pageLength: 25,
-		order: [[3, "desc"]]
+		order: [[4, "desc"]]
 	};
 
 	constructor (
@@ -48,7 +49,7 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 
 	public ngOnInit (): void {
 		this.refresh();
-		this.interval = setInterval(this.refresh.bind(this), 10000) as any;
+		this.interval = setInterval(this.refresh.bind(this), 5000) as any;
 	}
 
 	public ngAfterViewInit (): void {
@@ -68,43 +69,44 @@ export class HomeComponent implements AfterViewInit, OnInit, OnDestroy {
 	}
 
 	public refresh (): void {
+		if (this.refreshing) return;
+
 		if (this.firstLoad)
 			this.blockUI?.start();
 
 		this.firstLoad = false;
-		this.getProcessors();
-		this.getStatistics();
-	}
+		this.refreshing = true;
 
-	public getStatistics (): void {
-		this.statisticsService.getStatistics().subscribe({
-			next: statistics => {
+		forkJoin([
+			this.processorsService.getProcessors(),
+			this.statisticsService.getStatistics()
+		]).subscribe({
+			next: ([processors, statistics]) => {
 				this.blockUI?.stop();
-				this.statistics = statistics;
-			},
-
-			error: (error: HttpErrorResponse) => {
-				this.blockUI?.stop();
-				this.alertsService.httpErrorAlert(
-					"Error",
-					"Couldn't get statistics",
-					error
-				);
-			}
-		});
-	}
-
-	public getProcessors (): void {
-		this.processorsService.getProcessors().subscribe({
-			next: processors => {
 				this.processors = processors;
+				this.statistics = statistics;
+
+				const now = Date.now();
+				for (const processor of this.processors) {
+					if (processor.lastContact >= now - 70000)
+						processor.statusClass = "text-bg-success";
+					else if (processor.lastContact >= now - 140000)
+						processor.statusClass = "text-bg-warning";
+					else
+						processor.statusClass = "text-bg-danger";
+				}
+
+				this.refreshing = false;
 				this.rerenderDatatables();
 			},
 
 			error: (error: HttpErrorResponse) => {
+				console.error("Error:", error);
+				this.blockUI?.stop();
+				this.refreshing = false;
 				this.alertsService.httpErrorAlert(
 					"Error",
-					"Couldn't get processors",
+					"Couldn't update the statistics.",
 					error
 				);
 			}

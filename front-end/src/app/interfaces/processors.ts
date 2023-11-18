@@ -9,5 +9,6 @@ export interface IProcessors {
 	host: string;
 	processingMode: ProcessingModes;
 	qtyCPUs: number;
-	lastContact: number | Date;
+	lastContact: number;
+	statusClass?: string;
 }
