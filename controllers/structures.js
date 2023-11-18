@@ -27,8 +27,8 @@ class Structures {
 			saveResult: [
 				naming.ensureAuthorized.bind(naming),
 				body("filename").isString().isLength({ min: 1 }).withMessage("Invalid structure filename."),
-				body("result").isNumeric().withMessage("Invalid processing result.").toFloat(),
-				body("processingTime").isNumeric().withMessage("Invalid processing time.").toInt()
+				body("result").isFloat({ gt: 0 }).withMessage("Invalid processing result.").toFloat(),
+				body("processingTime").isInt({ min: 1 }).withMessage("Invalid processing time.").toInt()
 			],
 			processorPing: [
 				naming.ensureAuthorized.bind(naming),
