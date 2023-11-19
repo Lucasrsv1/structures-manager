@@ -214,7 +214,7 @@
 					<div class="card-body">
 						<h5 class="card-title">Min. Processing Speed</h5>
 						<p class="card-text fs-2">
-							<app-counter [target]="statistics.statistics.ratio.min"></app-counter> B/s
+							<app-counter [target]="(statistics.statistics.ratio.min * 1000) / 1024"></app-counter> KB/s
 						</p>
 					</div>
 				</div>
@@ -224,7 +224,7 @@
 					<div class="card-body">
 						<h5 class="card-title">Avg. Processing Speed</h5>
 						<p class="card-text fs-2">
-							<app-counter [target]="statistics.statistics.ratio.avg"></app-counter> B/s
+							<app-counter [target]="(statistics.statistics.ratio.avg * 1000) / 1024"></app-counter> KB/s
 						</p>
 					</div>
 				</div>
@@ -234,7 +234,7 @@
 					<div class="card-body">
 						<h5 class="card-title">Max. Processing Speed</h5>
 						<p class="card-text fs-2">
-							<app-counter [target]="statistics.statistics.ratio.max"></app-counter> B/s
+							<app-counter [target]="(statistics.statistics.ratio.max * 1000) / 1024"></app-counter> KB/s
 						</p>
 					</div>
 				</div>
