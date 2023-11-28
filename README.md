@@ -56,6 +56,18 @@
 	npm run structures-extractor
 	```
 
+### Banco de Dados 100% Processado
+
+Se você quiser acessar o banco de dados totalmente processado de acordo com as **212.303 estruturas** que existiam no dia **20/11/2023**, você pode restaurar o seguinte backup. Para isso, baixe e extraia o backup do link abaixo e em seguida execute o comando a seguir para restaurá-lo.
+
+[structures-manager-finished-bkp.zip](https://drive.google.com/file/d/1j_wyk_vyiWUfBu1ZtuJrkbeMHhi8SVpJ/view?usp=sharing)
+
+```sh
+mongorestore -d <collection-name> .\mongodump\structures-manager\
+```
+
+**Observação:** no comando acima, `<collection-name>` deve ser substituído pelo nome da collection do MongoDB que você irá utilizada. O nome padrão é `structures-manager`. Além disso, a pasta `mongodump` é a pasta que foi extraída do arquivo comprimido baixado.
+
 ## Execução do Servidor (Front-end e API)
 
 ### Compilação do Front-end
